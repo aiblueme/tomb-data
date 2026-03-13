@@ -161,9 +161,9 @@
 
 {% if all_tags %}
 <div id="tag-filter">
-  <button class="filter-btn active" data-tag="ALL" onclick="filterByTag(this, 'ALL')">ALL {{ total_count }}</button>
+  <button class="filter-btn active" data-tag="ALL" aria-pressed="true" onclick="filterByTag(this, 'ALL')">ALL {{ total_count }}</button>
   {% for tag, count in all_tags %}
-  <button class="filter-btn" data-tag="{{ tag }}" onclick="filterByTag(this, '{{ tag }}')">{{ tag }} {{ count }}</button>
+  <button class="filter-btn" data-tag="{{ tag }}" aria-pressed="false" onclick="filterByTag(this, '{{ tag }}')">{{ tag }} {{ count }}</button>
   {% endfor %}
 </div>
 {% endif %}
@@ -181,7 +181,7 @@
       <div class="row-summary">{{ report.summary }}</div>
       {% endif %}
     </div>
-    <div class="row-tags" onclick="this.classList.toggle('open')">
+    <div class="row-tags" role="button" tabindex="0" onclick="this.classList.toggle('open')" onkeydown="if(event.key==='Enter'||event.key===' ')this.classList.toggle('open')">
       {% if report.tags %}<span class="tag-count">+{{ report.tags|length }}</span>{% endif %}
       {% for tag in report.tags %}<span class="tag">{{ tag }}</span>{% endfor %}
     </div>
@@ -200,8 +200,10 @@
 function filterByTag(btn, tag) {
   document.querySelectorAll('.filter-btn').forEach(function(b) {
     b.classList.remove('active');
+    b.setAttribute('aria-pressed', 'false');
   });
   btn.classList.add('active');
+  btn.setAttribute('aria-pressed', 'true');
 
   var rows = document.querySelectorAll('.report-row');
   rows.forEach(function(row) {

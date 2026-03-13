@@ -236,9 +236,12 @@ def build_index(env: Environment, output_dir: Path, manifest: list) -> None:
         try:
             dt = datetime.fromisoformat(date_str)
             ym = dt.strftime("%Y-%m")
+            date_short = dt.strftime("%d %b")
         except Exception:
+            dt = None
             ym = date_str[:7] if date_str else "Unknown"
-        r["date_short"] = dt.strftime("%d %b") if date_str else ""
+            date_short = ""
+        r["date_short"] = date_short
         groups[ym].append(r)
 
     grouped = list(groups.items())
@@ -261,8 +264,12 @@ def build_index(env: Environment, output_dir: Path, manifest: list) -> None:
     logger.info("Rebuilt index.html (%d reports)", len(manifest_sorted))
 
     search_tmpl = env.get_template("search.html")
-    (output_dir / "search.html").write_text(search_tmpl.render(), encoding="utf-8")
+    (output_dir / "search.html").write_text(search_tmpl.render(total_count=len(manifest_sorted)), encoding="utf-8")
     logger.info("Rebuilt search.html")
+
+    error_tmpl = env.get_template("404.html")
+    (output_dir / "404.html").write_text(error_tmpl.render(), encoding="utf-8")
+    logger.info("Rebuilt 404.html")
 
 
 # --- Word count ---

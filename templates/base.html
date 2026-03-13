@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Research Archive{% endblock %}</title>
+  {% block meta_description %}{% endblock %}
+  {% block og_tags %}{% endblock %}
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -79,6 +81,7 @@
     }
     #sitenav a:first-child { padding-left: 0; }
     #sitenav a:hover { color: var(--accent); text-decoration: none; }
+    #sitenav a[aria-current="page"] { color: var(--fg); font-weight: bold; }
 
     /* Main content wrapper */
     #content {
@@ -109,7 +112,7 @@
   <span class="site-meta">DEEP RESEARCH REPORTS &mdash; SELF-HOSTED</span>
 </header>
 
-<nav id="sitenav">
+<nav id="sitenav" aria-label="Site navigation">
   <a href="/">Archive</a>
   <a href="/search.html">Search</a>
 </nav>
@@ -124,5 +127,16 @@
 </footer>
 
 {% block body_scripts %}{% endblock %}
+<script>
+(function() {
+  var path = window.location.pathname;
+  document.querySelectorAll('#sitenav a').forEach(function(a) {
+    var href = a.getAttribute('href');
+    if (href === path || (href === '/' && (path === '/' || path === '/index.html')) || (href !== '/' && path === href)) {
+      a.setAttribute('aria-current', 'page');
+    }
+  });
+})();
+</script>
 </body>
 </html>

@@ -168,6 +168,7 @@
 
   <div id="panel-pagefind">
     <div class="search-panel-title">Browse (full-text index)</div>
+    {% if total_count %}<div style="font-size:11px;color:var(--muted);margin-bottom:10px;">{{ total_count }} reports indexed</div>{% endif %}
     <div id="pagefind-search"></div>
   </div>
 </div>
@@ -176,7 +177,11 @@
 {% block body_scripts %}
 <script>
 // Pagefind
-new PagefindUI({ element: "#pagefind-search", showSubResults: false });
+try {
+  new PagefindUI({ element: "#pagefind-search", showSubResults: false });
+} catch(e) {
+  document.getElementById('pagefind-search').innerHTML = '<p class="search-empty">Full-text browse unavailable.</p>';
+}
 
 // MeiliSearch live search
 (function() {

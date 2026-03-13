@@ -269,8 +269,19 @@
 }
 {% endblock %}
 
+{% block meta_description %}<meta name="description" content="{{ summary | e }}">{% endblock %}
+
+{% block og_tags %}
+<meta property="og:title" content="{{ title | e }} — Research Archive">
+<meta property="og:description" content="{{ summary | e }}">
+<meta property="og:type" content="article">
+{% endblock %}
+
 {% block head_extra %}
+{% if charts_json != '{}' %}
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -282,13 +293,13 @@
     {% if word_count %}<span>~{{ word_count }} words</span>{% endif %}
   </div>
   {% if tags %}
-  <button class="tags-toggle" onclick="var r=this.nextElementSibling;r.classList.toggle('open');this.textContent=r.classList.contains('open')?'{{ tags|length }} TAGS ▴':'{{ tags|length }} TAGS ▾'">{{ tags|length }} TAGS ▾</button>
+  <button class="tags-toggle" aria-expanded="false" onclick="var r=this.nextElementSibling;r.classList.toggle('open');var open=r.classList.contains('open');this.setAttribute('aria-expanded',open);this.textContent=open?'{{ tags|length }} TAGS ▴':'{{ tags|length }} TAGS ▾'">{{ tags|length }} TAGS ▾</button>
   <div class="report-tags-row">{% for tag in tags %}<span class="tag">{{ tag }}</span>{% endfor %}</div>
   {% endif %}
 </div>
 
 <div id="report-layout">
-  <aside id="toc-sidebar">
+  <aside id="toc-sidebar" aria-label="Table of contents">
     <span class="toc-label">Contents</span>
     <ul class="toc-list">
       {% for item in toc %}
