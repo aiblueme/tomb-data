@@ -356,6 +356,11 @@ def process_file(
     # Replace markers with actual elements, collect chart configs
     body_html, chart_configs = replace_visual_markers(body_html, charts, photos_data, {})
 
+    # Derive plain text for summary fallback + MeiliSearch
+    content_text = re.sub(r"<[^>]+>", " ", body_html)
+    content_text = re.sub(r"\s+", " ", content_text).strip()
+    summary_rendered = summary or content_text[:300]
+
     # Render report HTML
     tmpl = env.get_template("report.html")
     html = tmpl.render(
@@ -364,7 +369,7 @@ def process_file(
         slug=slug,
         tags=tags,
         source=source,
-        summary=summary,
+        summary=summary_rendered,
         word_count=wc,
         body_html=body_html,
         toc=toc_items,
@@ -375,17 +380,13 @@ def process_file(
     output_file = output_dir / f"{slug}.html"
     output_file.write_text(html, encoding="utf-8")
     logger.info("Wrote: %s", output_file)
-
-    # MeiliSearch
-    content_text = re.sub(r"<[^>]+>", " ", body_html)
-    content_text = re.sub(r"\s+", " ", content_text).strip()
     doc = {
         "id": slug,
         "title": title,
         "slug": slug,
         "date": date_iso,
         "tags": tags,
-        "summary": summary or content_text[:300],
+        "summary": summary_rendered,
         "content_text": content_text[:5000],
     }
     push_to_meili(doc)
@@ -396,7 +397,7 @@ def process_file(
         "title": title,
         "date": date_iso,
         "tags": tags,
-        "summary": summary or content_text[:200],
+        "summary": summary_rendered[:200],
     }
     manifest[:] = [r for r in manifest if r.get("slug") != slug]
     manifest.append(manifest_entry)
