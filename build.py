@@ -260,6 +260,10 @@ def build_index(env: Environment, output_dir: Path, manifest: list) -> None:
     (output_dir / "index.html").write_text(html, encoding="utf-8")
     logger.info("Rebuilt index.html (%d reports)", len(manifest_sorted))
 
+    search_tmpl = env.get_template("search.html")
+    (output_dir / "search.html").write_text(search_tmpl.render(), encoding="utf-8")
+    logger.info("Rebuilt search.html")
+
 
 # --- Word count ---
 def word_count(text: str) -> int:
