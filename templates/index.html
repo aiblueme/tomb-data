@@ -27,7 +27,7 @@
 
 /* Tag filter bar */
 #tag-filter {
-  border-bottom: var(--border);
+  border-bottom: var(--border-light);
   padding: 8px 0;
   margin-bottom: 20px;
   display: flex;
@@ -40,21 +40,21 @@
 
 .filter-btn {
   padding: 3px 10px;
-  border-right: var(--border);
+  border-right: var(--border-light);
   cursor: pointer;
   text-transform: uppercase;
-  color: var(--fg);
+  color: #888;
   background: none;
   border-top: none;
   border-bottom: none;
   border-left: none;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 0.08em;
 }
 .filter-btn:first-child { padding-left: 0; }
 .filter-btn:hover { color: var(--accent); }
-.filter-btn.active { color: var(--accent); font-weight: bold; }
+.filter-btn.active { color: var(--fg); font-weight: bold; }
 
 /* Month groups */
 .month-group {
@@ -63,19 +63,20 @@
 
 .month-heading {
   font-family: var(--condensed);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 3px solid var(--fg);
+  border-bottom: 2px solid var(--fg);
   padding-bottom: 4px;
   margin-bottom: 0;
+  color: var(--muted);
 }
 
 /* Report rows */
 .report-row {
-  border-bottom: var(--border);
-  padding: 10px 0;
+  border-bottom: var(--border-faint);
+  padding: 12px 0;
   display: grid;
   grid-template-columns: 80px 1fr auto;
   gap: 12px;
@@ -93,8 +94,10 @@
 .row-main {}
 
 .row-title {
+  font-family: var(--condensed);
   font-weight: bold;
-  font-size: 13px;
+  font-size: 14px;
+  text-transform: none;
   color: var(--fg);
   display: block;
   margin-bottom: 3px;
@@ -116,12 +119,12 @@
 
 .tag {
   display: inline-block;
-  border: var(--border);
+  border: 1px solid #ccc;
   padding: 1px 5px;
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--fg);
+  color: #999;
   white-space: nowrap;
 }
 

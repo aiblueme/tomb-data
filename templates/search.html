@@ -84,7 +84,8 @@
 
 .live-result a {
   font-weight: bold;
-  font-size: 13px;
+  font-size: 14px;
+  text-transform: none;
   color: var(--fg);
   display: block;
   margin-bottom: 3px;
@@ -208,7 +209,7 @@ new PagefindUI({ element: "#pagefind-search", showSubResults: false });
             ? h._formatted.content_text.substring(0, 200) + '&hellip;'
             : (h.summary || '');
           var tags = (h.tags || []).map(function(t) {
-            return '<span style="border:1px solid #000;padding:1px 4px;font-size:10px;text-transform:uppercase;margin-right:4px;">' + escHtml(t) + '</span>';
+            return '<span style="border:1px solid #ccc;padding:1px 4px;font-size:10px;text-transform:uppercase;color:#999;margin-right:4px;">' + escHtml(t) + '</span>';
           }).join('');
           return '<div class="live-result">' +
             '<a href="/' + escHtml(h.slug) + '.html">' + escHtml(h.title) + '</a>' +

@@ -11,37 +11,44 @@
 
 #report-header h1 {
   font-family: var(--condensed);
-  font-size: 28px;
+  font-size: 30px;
   font-weight: 900;
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: -0.5px;
   line-height: 1.1;
   margin-bottom: 10px;
 }
 
-.report-meta {
+.report-byline {
   display: flex;
   gap: 16px;
   align-items: center;
   flex-wrap: wrap;
+  font-family: var(--mono);
   font-size: 11px;
   color: var(--muted);
   letter-spacing: 0.05em;
+  margin-bottom: 10px;
 }
 
-.report-meta .date { font-weight: bold; color: var(--fg); }
+.report-tags-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 0;
+}
 
 .tag {
   display: inline-block;
-  border: var(--border);
+  border: 1px solid #aaa;
   padding: 1px 5px;
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--fg);
+  color: #777;
 }
 
-.tag:hover { background: var(--fg); color: var(--bg); cursor: pointer; }
+.tag:hover { background: var(--fg); color: var(--bg); cursor: pointer; border-color: var(--fg); }
 
 /* Two-column layout */
 #report-layout {
@@ -63,7 +70,7 @@
   font-size: 10px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: #999;
   margin-bottom: 8px;
   display: block;
 }
@@ -74,14 +81,14 @@
 }
 
 #toc-sidebar .toc-list li {
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 #toc-sidebar .toc-list a {
   display: block;
   padding: 5px 0;
   font-size: 11px;
-  color: var(--fg);
+  color: #888;
   line-height: 1.3;
 }
 
@@ -90,7 +97,8 @@
 /* Prose */
 #prose {
   max-width: 65ch;
-  font-size: 13px;
+  font-family: var(--serif);
+  font-size: var(--prose-size);
   line-height: 1.75;
 }
 
@@ -98,38 +106,41 @@
   font-family: var(--condensed);
   font-size: 18px;
   font-weight: 900;
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: 0.02em;
-  margin: 32px 0 12px;
+  margin: 40px 0 12px;
   padding-bottom: 4px;
   border-bottom: var(--border);
 }
 
 #prose h3 {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: bold;
+  text-transform: none;
   margin: 20px 0 8px;
 }
 
-#prose p { margin-bottom: 14px; }
+#prose p { margin-bottom: 1em; }
 
 #prose ul, #prose ol {
-  margin: 0 0 14px 20px;
+  margin: 0 0 1em 20px;
 }
 
-#prose li { margin-bottom: 4px; }
+#prose li { margin-bottom: 6px; }
 
 #prose blockquote {
   border-left: 3px solid var(--accent);
-  padding: 6px 12px;
+  padding: 6px 20px;
   margin: 16px 0;
-  color: var(--muted);
+  color: #333;
+  font-style: italic;
 }
 
 #prose table {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 16px;
+  font-family: var(--mono);
   font-size: 12px;
 }
 
@@ -152,7 +163,7 @@
 
 #prose code {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 13px;
   background: #f0f0f0;
   border: 1px solid #ddd;
   padding: 1px 4px;
@@ -189,6 +200,7 @@
 }
 
 .chart-block .chart-title {
+  font-family: var(--mono);
   font-size: 11px;
   font-weight: bold;
   text-transform: uppercase;
@@ -216,6 +228,7 @@
 }
 
 .photo-block figcaption {
+  font-family: var(--mono);
   padding: 6px 8px;
   font-size: 10px;
   color: var(--muted);
@@ -247,14 +260,16 @@
 {% block content %}
 <div id="report-header">
   <h1>{{ title }}</h1>
-  <div class="report-meta">
-    <span class="date">{{ date }}</span>
+  <div class="report-byline">
+    <span>{{ date }}</span>
     {% if source %}<span>{{ source }}</span>{% endif %}
-    {% for tag in tags %}
-      <span class="tag">{{ tag }}</span>
-    {% endfor %}
     {% if word_count %}<span>~{{ word_count }} words</span>{% endif %}
   </div>
+  {% if tags %}
+  <div class="report-tags-row">
+    {% for tag in tags %}<span class="tag">{{ tag }}</span>{% endfor %}
+  </div>
+  {% endif %}
 </div>
 
 <div id="report-layout">
