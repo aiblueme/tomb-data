@@ -1,0 +1,84 @@
+services:
+  research-nginx:
+    image: nginx:alpine
+    container_name: research-nginx
+    restart: unless-stopped
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - /opt/research/data/output:/usr/share/nginx/html:ro
+      - /opt/research/data/photo-cache:/usr/share/nginx/photo-cache:ro
+    environment:
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-changeme}
+    networks:
+      - swag-network
+    labels:
+      - "swag=enable"
+      - "swag_address=research-nginx"
+      - "swag_port=80"
+      - "swag_url=research.shellnode.lol"
+      - "swag_auth=authelia"
+      - "homepage.instance=my-vps"
+      - "homepage.name=Research Archive"
+      - "homepage.group=Knowledge"
+      - "homepage.href=https://research.shellnode.lol"
+      - "homepage.icon=mdi-book-open-page-variant"
+      - "homepage.description=Deep Research Reports"
+    depends_on:
+      - research-meili
+
+  research-meili:
+    image: getmeili/meilisearch:v1.8
+    container_name: research-meili
+    restart: unless-stopped
+    volumes:
+      - /opt/research/data/meili:/meili_data
+    environment:
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-changeme}
+      - MEILI_NO_ANALYTICS=true
+      - MEILI_ENV=production
+    networks:
+      - swag-network
+    # NOT exposed via SWAG — internal only
+
+  research-pipeline:
+    build: .
+    image: research-pipeline
+    container_name: research-pipeline
+    restart: unless-stopped
+    volumes:
+      - /opt/research/data/reports/inbox:/opt/research/data/reports/inbox
+      - /opt/research/data/reports/archive:/opt/research/data/reports/archive
+      - /opt/research/data/output:/opt/research/data/output
+      - /opt/research/data/photo-cache:/opt/research/data/photo-cache
+      - ./templates:/app/templates:ro
+    environment:
+      - MEILI_URL=http://research-meili:7700
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-changeme}
+      - UNSPLASH_ACCESS_KEY=${UNSPLASH_ACCESS_KEY:-}
+      - PEXELS_API_KEY=${PEXELS_API_KEY:-}
+    networks:
+      - swag-network
+    depends_on:
+      - research-meili
+
+  research-authelia:
+    image: authelia/authelia:latest
+    container_name: research-authelia
+    restart: unless-stopped
+    volumes:
+      - /opt/research/data/auth:/config
+    environment:
+      - AUTHELIA_JWT_SECRET=${AUTHELIA_JWT_SECRET}
+      - AUTHELIA_SESSION_SECRET=${AUTHELIA_SESSION_SECRET}
+      - AUTHELIA_STORAGE_ENCRYPTION_KEY=${AUTHELIA_STORAGE_ENCRYPTION_KEY}
+    networks:
+      - swag-network
+    labels:
+      - "swag=enable"
+      - "swag_address=research-authelia"
+      - "swag_port=9091"
+      - "swag_url=auth.shellnode.lol"
+
+networks:
+  swag-network:
+    external: true

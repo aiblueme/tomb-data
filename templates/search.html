@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}Search — Research Archive{% endblock %}
+
+{% block extra_styles %}
+#search-header {
+  border-bottom: var(--border);
+  padding-bottom: 12px;
+  margin-bottom: 24px;
+}
+
+#search-header h1 {
+  font-family: var(--condensed);
+  font-size: 22px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.3px;
+  margin-bottom: 6px;
+}
+
+#search-header p {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Layout: two panels */
+#search-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+.search-panel-title {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: var(--border);
+  padding-bottom: 6px;
+  margin-bottom: 14px;
+}
+
+/* Live search (MeiliSearch) */
+#live-input-wrap {
+  display: flex;
+  border: var(--border);
+  margin-bottom: 12px;
+}
+
+#live-input {
+  flex: 1;
+  border: none;
+  padding: 8px 10px;
+  font-family: var(--mono);
+  font-size: 13px;
+  outline: none;
+  background: var(--bg);
+}
+
+#live-input:focus { background: #fafafa; }
+
+#live-submit {
+  border: none;
+  border-left: var(--border);
+  padding: 8px 12px;
+  background: var(--fg);
+  color: var(--bg);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+#live-submit:hover { background: var(--accent); }
+
+#live-results { min-height: 40px; }
+
+.live-result {
+  border-bottom: var(--border);
+  padding: 10px 0;
+}
+
+.live-result a {
+  font-weight: bold;
+  font-size: 13px;
+  color: var(--fg);
+  display: block;
+  margin-bottom: 3px;
+}
+.live-result a:hover { color: var(--accent); text-decoration: none; }
+
+.live-result .result-meta {
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 4px;
+  letter-spacing: 0.05em;
+}
+
+.live-result .result-excerpt {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.live-result .result-excerpt mark {
+  background: none;
+  color: var(--accent);
+  font-weight: bold;
+}
+
+.search-empty {
+  font-size: 11px;
+  color: var(--muted);
+  padding: 8px 0;
+}
+
+.search-status {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  margin-top: 8px;
+}
+
+/* Pagefind styles override */
+#pagefind-search {
+  --pagefind-ui-scale: 0.85;
+  --pagefind-ui-primary: #e63946;
+  --pagefind-ui-text: #000;
+  --pagefind-ui-background: #fff;
+  --pagefind-ui-border: #000;
+  --pagefind-ui-border-radius: 0;
+  --pagefind-ui-font: 'Courier New', Courier, monospace;
+}
+
+@media (max-width: 700px) {
+  #search-layout {
+    grid-template-columns: 1fr;
+  }
+}
+{% endblock %}
+
+{% block head_extra %}
+<link href="/pagefind/pagefind-ui.css" rel="stylesheet">
+<script src="/pagefind/pagefind-ui.js"></script>
+{% endblock %}
+
+{% block content %}
+<div id="search-header">
+  <h1>Search</h1>
+  <p>Live search via MeiliSearch &mdash; full-text browse via Pagefind</p>
+</div>
+
+<div id="search-layout">
+  <div id="panel-live">
+    <div class="search-panel-title">Live Search (fuzzy)</div>
+    <div id="live-input-wrap">
+      <input id="live-input" type="text" placeholder="Search reports..." autocomplete="off" spellcheck="false">
+      <button id="live-submit">Go</button>
+    </div>
+    <div id="live-results">
+      <div class="search-empty">Type to search&hellip;</div>
+    </div>
+    <div id="live-status" class="search-status"></div>
+  </div>
+
+  <div id="panel-pagefind">
+    <div class="search-panel-title">Browse (full-text index)</div>
+    <div id="pagefind-search"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block body_scripts %}
+<script>
+// Pagefind
+new PagefindUI({ element: "#pagefind-search", showSubResults: false });
+
+// MeiliSearch live search
+(function() {
+  var input = document.getElementById('live-input');
+  var results = document.getElementById('live-results');
+  var status = document.getElementById('live-status');
+  var timer = null;
+
+  function search(q) {
+    if (!q || q.length < 2) {
+      results.innerHTML = '<div class="search-empty">Type to search&hellip;</div>';
+      status.textContent = '';
+      return;
+    }
+
+    fetch('/api/search?q=' + encodeURIComponent(q))
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var hits = data.hits || [];
+        status.textContent = hits.length + ' result' + (hits.length !== 1 ? 's' : '') +
+          (data.processingTimeMs !== undefined ? ' (' + data.processingTimeMs + 'ms)' : '');
+
+        if (!hits.length) {
+          results.innerHTML = '<div class="search-empty">No results for &ldquo;' + escHtml(q) + '&rdquo;</div>';
+          return;
+        }
+
+        results.innerHTML = hits.slice(0, 5).map(function(h) {
+          var excerpt = (h._formatted && h._formatted.content_text)
+            ? h._formatted.content_text.substring(0, 200) + '&hellip;'
+            : (h.summary || '');
+          var tags = (h.tags || []).map(function(t) {
+            return '<span style="border:1px solid #000;padding:1px 4px;font-size:10px;text-transform:uppercase;margin-right:4px;">' + escHtml(t) + '</span>';
+          }).join('');
+          return '<div class="live-result">' +
+            '<a href="/' + escHtml(h.slug) + '.html">' + escHtml(h.title) + '</a>' +
+            '<div class="result-meta">' + escHtml(h.date || '') + ' &nbsp; ' + tags + '</div>' +
+            '<div class="result-excerpt">' + excerpt + '</div>' +
+            '</div>';
+        }).join('');
+      })
+      .catch(function(err) {
+        results.innerHTML = '<div class="search-empty">Search unavailable &mdash; ' + escHtml(String(err)) + '</div>';
+        status.textContent = '';
+      });
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  input.addEventListener('input', function() {
+    clearTimeout(timer);
+    timer = setTimeout(function() { search(input.value.trim()); }, 250);
+  });
+
+  document.getElementById('live-submit').addEventListener('click', function() {
+    search(input.value.trim());
+  });
+
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { clearTimeout(timer); search(input.value.trim()); }
+  });
+})();
+</script>
+{% endblock %}

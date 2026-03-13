@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}Research Archive{% endblock %}
+
+{% block extra_styles %}
+#archive-header {
+  border-bottom: var(--border);
+  padding-bottom: 12px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+#archive-header h1 {
+  font-family: var(--condensed);
+  font-size: 22px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.3px;
+}
+
+#archive-header .count {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Tag filter bar */
+#tag-filter {
+  border-bottom: var(--border);
+  padding: 8px 0;
+  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  align-items: center;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.filter-btn {
+  padding: 3px 10px;
+  border-right: var(--border);
+  cursor: pointer;
+  text-transform: uppercase;
+  color: var(--fg);
+  background: none;
+  border-top: none;
+  border-bottom: none;
+  border-left: none;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+.filter-btn:first-child { padding-left: 0; }
+.filter-btn:hover { color: var(--accent); }
+.filter-btn.active { color: var(--accent); font-weight: bold; }
+
+/* Month groups */
+.month-group {
+  margin-bottom: 32px;
+}
+
+.month-heading {
+  font-family: var(--condensed);
+  font-size: 14px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 3px solid var(--fg);
+  padding-bottom: 4px;
+  margin-bottom: 0;
+}
+
+/* Report rows */
+.report-row {
+  border-bottom: var(--border);
+  padding: 10px 0;
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.report-row:hover { background: #fafafa; }
+
+.row-date {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.row-main {}
+
+.row-title {
+  font-weight: bold;
+  font-size: 13px;
+  color: var(--fg);
+  display: block;
+  margin-bottom: 3px;
+}
+.row-title:hover { color: var(--accent); text-decoration: none; }
+
+.row-summary {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.row-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.tag {
+  display: inline-block;
+  border: var(--border);
+  padding: 1px 5px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg);
+  white-space: nowrap;
+}
+
+.report-row[data-tags=""] .row-tags { display: none; }
+
+.hidden { display: none !important; }
+
+@media (max-width: 600px) {
+  .report-row {
+    grid-template-columns: 1fr;
+  }
+  .row-tags { justify-content: flex-start; margin-top: 4px; }
+}
+{% endblock %}
+
+{% block content %}
+<div id="archive-header">
+  <h1>Archive</h1>
+  <span class="count">{{ total_count }} report{% if total_count != 1 %}s{% endif %}</span>
+</div>
+
+{% if all_tags %}
+<div id="tag-filter">
+  <button class="filter-btn active" data-tag="ALL" onclick="filterByTag(this, 'ALL')">ALL {{ total_count }}</button>
+  {% for tag, count in all_tags %}
+  <button class="filter-btn" data-tag="{{ tag }}" onclick="filterByTag(this, '{{ tag }}')">{{ tag }} {{ count }}</button>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% for month, reports in grouped_reports %}
+<div class="month-group" data-month="{{ month }}">
+  <div class="month-heading">{{ month }} ({{ reports | length }})</div>
+
+  {% for report in reports %}
+  <div class="report-row" data-tags="{{ report.tags | join(',') | upper }}">
+    <span class="row-date">{{ report.date_short }}</span>
+    <div class="row-main">
+      <a href="{{ report.slug }}.html" class="row-title">{{ report.title }}</a>
+      {% if report.summary %}
+      <div class="row-summary">{{ report.summary }}</div>
+      {% endif %}
+    </div>
+    <div class="row-tags">
+      {% for tag in report.tags %}
+      <span class="tag">{{ tag }}</span>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p style="color: var(--muted); margin-top: 24px;">No reports yet. Drop a <code>.md</code> file into the inbox.</p>
+{% endfor %}
+{% endblock %}
+
+{% block footer_right %}{{ total_count }} reports indexed{% endblock %}
+
+{% block body_scripts %}
+<script>
+function filterByTag(btn, tag) {
+  document.querySelectorAll('.filter-btn').forEach(function(b) {
+    b.classList.remove('active');
+  });
+  btn.classList.add('active');
+
+  var rows = document.querySelectorAll('.report-row');
+  rows.forEach(function(row) {
+    if (tag === 'ALL') {
+      row.classList.remove('hidden');
+    } else {
+      var tags = row.dataset.tags ? row.dataset.tags.split(',') : [];
+      if (tags.includes(tag.toUpperCase())) {
+        row.classList.remove('hidden');
+      } else {
+        row.classList.add('hidden');
+      }
+    }
+  });
+
+  // Hide empty month groups
+  document.querySelectorAll('.month-group').forEach(function(group) {
+    var visible = group.querySelectorAll('.report-row:not(.hidden)');
+    group.style.display = visible.length ? '' : 'none';
+  });
+}
+</script>
+{% endblock %}

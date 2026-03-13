@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Research Archive{% endblock %}</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #fff;
+      --fg: #000;
+      --accent: #e63946;
+      --border: 1px solid #000;
+      --mono: 'Courier New', Courier, monospace;
+      --condensed: 'Arial Narrow', Arial, sans-serif;
+      --muted: #555;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Masthead */
+    #masthead {
+      border-bottom: 3px solid var(--fg);
+      padding: 10px 20px;
+      display: flex;
+      align-items: baseline;
+      gap: 24px;
+    }
+
+    #masthead .site-name {
+      font-family: var(--condensed);
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      text-transform: uppercase;
+      color: var(--fg);
+      text-decoration: none;
+    }
+    #masthead .site-name:hover { text-decoration: none; color: var(--accent); }
+
+    #masthead .site-meta {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+
+    /* Nav */
+    #sitenav {
+      border-bottom: var(--border);
+      padding: 6px 20px;
+      display: flex;
+      gap: 0;
+      align-items: center;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    #sitenav a {
+      color: var(--fg);
+      padding: 2px 10px;
+      border-right: var(--border);
+    }
+    #sitenav a:first-child { padding-left: 0; }
+    #sitenav a:hover { color: var(--accent); text-decoration: none; }
+
+    /* Main content wrapper */
+    #content {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 20px;
+    }
+
+    /* Footer */
+    #footer {
+      border-top: 3px solid var(--fg);
+      padding: 10px 20px;
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      margin-top: 40px;
+    }
+
+    {% block extra_styles %}{% endblock %}
+  </style>
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+
+<header id="masthead">
+  <a href="/" class="site-name">Research Archive</a>
+  <span class="site-meta">DEEP RESEARCH REPORTS &mdash; SELF-HOSTED</span>
+</header>
+
+<nav id="sitenav">
+  <a href="/">Archive</a>
+  <a href="/search.html">Search</a>
+</nav>
+
+<main id="content">
+  {% block content %}{% endblock %}
+</main>
+
+<footer id="footer">
+  <span>Research Report Pipeline</span>
+  <span>{% block footer_right %}{% endblock %}</span>
+</footer>
+
+{% block body_scripts %}{% endblock %}
+</body>
+</html>
