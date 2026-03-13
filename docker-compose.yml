@@ -72,7 +72,9 @@ services:
       - AUTHELIA_SESSION_SECRET=${AUTHELIA_SESSION_SECRET}
       - AUTHELIA_STORAGE_ENCRYPTION_KEY=${AUTHELIA_STORAGE_ENCRYPTION_KEY}
     networks:
-      - swag-network
+      swag-network:
+        aliases:
+          - authelia
     labels:
       - "swag=enable"
       - "swag_address=research-authelia"
