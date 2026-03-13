@@ -1,5 +1,79 @@
 # Progress
 
+## 2026-03-13 — Session 5: QA Audit + Full Fix Pass
+
+### QA assessment
+- QA agent audited `https://research.shellnode.lol/` and identified 40+ issues across accessibility, performance, SEO, UX, and security
+- Prioritised 14 highest-value fixes across 7 files; 26 issues intentionally skipped (documented rationale in plan)
+
+### Fixes implemented
+
+**`build.py`**
+- **E-05 NameError** (CRITICAL): `dt` was referenced after a failed `datetime.fromisoformat()` parse — `date_short` assignment would raise `NameError`. Fixed by assigning `date_short` inside the try/except and using a `dt = None` sentinel.
+- **Summary fallback bug**: `content_text` was computed *after* the Jinja2 render call, so `summary or content_text[:300]` fallback never reached the template. Moved `content_text` extraction before the render; now `summary_rendered` is used consistently in template render, MeiliSearch doc, and manifest entry.
+- **404.html generation**: `build_index()` now renders and writes `404.html` to output dir on every index rebuild.
+- **`search.html` total_count**: Render call now passes `total_count=len(manifest_sorted)`.
+
+**`templates/404.html`** (new)
+- Custom brutalist 404 page extending `base.html` — "404 / NOT FOUND" headline, link back to archive.
+- nginx.conf already had `error_page 404 /404.html` configured; just needed the file.
+
+**`templates/base.html`**
+- `{% block meta_description %}` and `{% block og_tags %}` blocks added in `<head>` for per-page override
+- `aria-label="Site navigation"` on `<nav id="sitenav">`
+- `#sitenav a[aria-current="page"]` CSS rule (bold, fg colour)
+- Inline JS added before `</body>`: marks current nav link with `aria-current="page"` based on `window.location.pathname`
+
+**`templates/report.html`**
+- Chart.js `<script>` now conditional: `{% if charts_json != '{}' %}` — saves ~72KB on text-only reports
+- `<link rel="preconnect" href="https://cdn.jsdelivr.net">` inside same conditional block
+- `{% block meta_description %}` override using `{{ summary | e }}`
+- `{% block og_tags %}` override: `og:title`, `og:description`, `og:type=article`
+- `aria-expanded="false"` on `.tags-toggle` button; `onclick` now calls `setAttribute('aria-expanded', ...)` on toggle
+- `aria-label="Table of contents"` on `<aside id="toc-sidebar">`
+
+**`templates/index.html`**
+- `aria-pressed="true"` on ALL button (default active), `aria-pressed="false"` on all tag buttons
+- `filterByTag()` JS now sets `aria-pressed` on activate/deactivate
+- `.row-tags` divs: `role="button" tabindex="0"` + `onkeydown` for Enter/Space — keyboard accessible
+
+**`templates/search.html`**
+- `PagefindUI(...)` wrapped in `try/catch` — graceful fallback message on failure
+- Browse panel shows `{{ total_count }} reports indexed` subtitle
+
+**`nginx.conf`**
+- Security headers added to server block: `X-Frame-Options SAMEORIGIN`, `X-Content-Type-Options nosniff`, `Referrer-Policy strict-origin-when-cross-origin`
+- Pagefind cache: `expires 7d` + `Cache-Control "public, immutable"` (was `1h`, no immutable)
+
+### Deployment notes
+- Template changes bind-mounted into pipeline container — effective immediately after git pull
+- `nginx.conf` changes required `docker restart research-nginx` to take effect
+- `build.py` changes required full image rebuild (`docker compose up -d --build research-pipeline`)
+- All 18 live reports re-rendered twice: once to pick up template changes, once after the summary bug fix
+- Re-render procedure: copy most-recent version of each slug from archive back to inbox → `docker exec research-pipeline python /app/build.py --once`
+
+### Verified (14/14 QA checks)
+- Security headers present on all responses ✓
+- Custom 404 renders at `/nonexistent-page` ✓
+- Nav `aria-current="page"` correct on `/` and `/search.html` ✓
+- Pagefind cache: `Cache-Control: public, immutable`, max-age 604800 ✓
+- ALL filter `aria-pressed="true"`, others `false` ✓
+- `.row-tags` keyboard accessible (`role=button`, `tabindex=0`) ✓
+- `.tags-toggle` has `aria-expanded="false"` ✓
+- `aside#toc-sidebar` has `aria-label="Table of contents"` ✓
+- Chart.js absent on text-only reports ✓
+- `<meta name="description">` present with content on report pages ✓
+- OG tags present with content ✓
+- Search page shows "18 reports indexed" ✓
+- Nav `aria-label="Site navigation"` ✓
+
+### Remaining
+- [ ] Change Authelia password from `changeme`
+- [ ] TOTP enrollment
+- [ ] Set `UNSPLASH_ACCESS_KEY` in `~/tomb-data/.env` on vps2
+- [ ] Add `---research-visuals---` block to base Deep Research prompt template
+- [ ] Figure out report delivery mechanism (currently: manual copy to inbox)
+
 ## 2026-03-13 — Session 4: Typography Redesign + Tag Collapse + search.html Fix
 
 ### Typography redesign (all templates)
