@@ -115,10 +115,22 @@
   flex-wrap: wrap;
   gap: 4px;
   justify-content: flex-end;
+  cursor: pointer;
 }
 
+.tag-count {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: #bbb;
+  white-space: nowrap;
+  letter-spacing: 0.05em;
+  align-self: flex-start;
+}
+.row-tags:hover .tag-count { color: #888; }
+.row-tags.open .tag-count { display: none; }
+
 .tag {
-  display: inline-block;
+  display: none;
   border: 1px solid #ccc;
   padding: 1px 5px;
   font-size: 10px;
@@ -127,6 +139,7 @@
   color: #999;
   white-space: nowrap;
 }
+.row-tags.open .tag { display: inline-block; }
 
 .report-row[data-tags=""] .row-tags { display: none; }
 
@@ -168,10 +181,9 @@
       <div class="row-summary">{{ report.summary }}</div>
       {% endif %}
     </div>
-    <div class="row-tags">
-      {% for tag in report.tags %}
-      <span class="tag">{{ tag }}</span>
-      {% endfor %}
+    <div class="row-tags" onclick="this.classList.toggle('open')">
+      {% if report.tags %}<span class="tag-count">+{{ report.tags|length }}</span>{% endif %}
+      {% for tag in report.tags %}<span class="tag">{{ tag }}</span>{% endfor %}
     </div>
   </div>
   {% endfor %}

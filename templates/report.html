@@ -31,12 +31,28 @@
   margin-bottom: 10px;
 }
 
-.report-tags-row {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
+.tags-toggle {
+  background: none;
+  border: none;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #999;
+  cursor: pointer;
+  padding: 0;
   margin-bottom: 0;
 }
+.tags-toggle:hover { color: var(--fg); }
+
+.report-tags-row {
+  display: none;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+  margin-bottom: 0;
+}
+.report-tags-row.open { display: flex; }
 
 .tag {
   display: inline-block;
@@ -266,9 +282,8 @@
     {% if word_count %}<span>~{{ word_count }} words</span>{% endif %}
   </div>
   {% if tags %}
-  <div class="report-tags-row">
-    {% for tag in tags %}<span class="tag">{{ tag }}</span>{% endfor %}
-  </div>
+  <button class="tags-toggle" onclick="var r=this.nextElementSibling;r.classList.toggle('open');this.textContent=r.classList.contains('open')?'{{ tags|length }} TAGS ▴':'{{ tags|length }} TAGS ▾'">{{ tags|length }} TAGS ▾</button>
+  <div class="report-tags-row">{% for tag in tags %}<span class="tag">{{ tag }}</span>{% endfor %}</div>
   {% endif %}
 </div>
 
